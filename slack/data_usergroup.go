@@ -3,9 +3,10 @@ package slack
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/slack-go/slack"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/slack-go/slack"
 )
 
 func dataSourceUserGroup() *schema.Resource {
@@ -43,7 +44,7 @@ func dataSourceUserGroup() *schema.Resource {
 }
 
 func dataSlackUserGroupRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	usergroupId := d.Get("usergroup_id").(string)
 	ctx := context.WithValue(context.Background(), ctxId, usergroupId)

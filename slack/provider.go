@@ -1,66 +1,79 @@
 package slack
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func Provider() terraform.ResourceProvider {
-	var p *schema.Provider
-	p = &schema.Provider{
-		Schema: map[string]*schema.Schema{
-			"token": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SLACK_TOKEN", nil),
-				Description: descriptions["token"],
-			},
-		},
-
-		DataSourcesMap: map[string]*schema.Resource{
-			"slack_user":         dataSourceSlackUser(),
-			"slack_usergroup":    dataSourceUserGroup(),
-			"slack_conversation": dataSourceConversation(),
-			"slack_channel":      dataSourceChannel(), // deprecated
-			"slack_group":        dataSourceGroup(),   // deprecated
-		},
-
-		ResourcesMap: map[string]*schema.Resource{
-			"slack_usergroup":          resourceSlackUserGroup(),
-			"slack_usergroup_members":  resourceSlackUserGroupMembers(),
-			"slack_conversation":       resourceSlackConversation(),
-			"slack_channel":            resourceSlackChannel(), // deprecated
-			"slack_group":              resourceSlackGroup(),   // deprecated
-			"slack_usergroup_channels": resourceSlackUserGroupChannels(),
-		},
-	}
-
-	p.ConfigureFunc = providerConfigure(p)
-
-	return p
-}
-
-var descriptions map[string]string
-
 func init() {
-	descriptions = map[string]string{
-		"token": "The OAuth token used to connect to Slack.",
+	// Set descriptions to support markdown syntax, this will be used in document generation
+	// and the language server.
+	schema.DescriptionKind = schema.StringMarkdown
+
+	// Customize the content of descriptions when output. For example you can add defaults on
+	// to the exported descriptions if present.
+	schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
+		desc := s.Description
+		if s.Default != nil {
+			desc = fmt.Sprintf("Defaults to `%v`. ", s.Default) + desc
+		}
+		return strings.TrimSpace(desc)
 	}
 }
 
-func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
-	return func(d *schema.ResourceData) (interface{}, error) {
-		config := Config{
-			Token: d.Get("token").(string),
+func New(version string) func() *schema.Provider {
+	return func() *schema.Provider {
+		p := &schema.Provider{
+			Schema: map[string]*schema.Schema{
+				"token": {
+					Type:        schema.TypeString,
+					Required:    true,
+					DefaultFunc: schema.EnvDefaultFunc("SLACK_TOKEN", nil),
+					Description: "The OAuth token used to connect to Slack.",
+				},
+			},
+
+			DataSourcesMap: map[string]*schema.Resource{
+				"slack_conversation": dataSourceConversation(),
+				"slack_user":         dataSourceSlackUser(),
+				"slack_usergroup":    dataSourceUserGroup(),
+			},
+
+			ResourcesMap: map[string]*schema.Resource{
+				"slack_conversation":       resourceSlackConversation(),
+				"slack_usergroup_channels": resourceSlackUserGroupChannels(),
+				"slack_usergroup_members":  resourceSlackUserGroupMembers(),
+				"slack_usergroup":          resourceSlackUserGroup(),
+			},
 		}
 
-		meta, err := config.Client()
+		p.ConfigureContextFunc = configure(version, p)
+
+		return p
+	}
+}
+
+func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		var diags diag.Diagnostics
+		var config = Config{}
+
+		if token, ok := d.GetOk("token"); ok {
+			config.Token = token.(string)
+		}
+
+		client, err := config.Client()
 		if err != nil {
-			return nil, err
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Unable to create client from config: %v", err),
+			})
 		}
 
-		meta.(*Team).StopContext = p.StopContext()
-
-		return meta, nil
+		return client, diags
 	}
 }

@@ -3,9 +3,10 @@ package slack
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/slack-go/slack"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/slack-go/slack"
 )
 
 const userGroupListCacheFileName = "usergroups.json"
@@ -58,7 +59,7 @@ func configureSlackUserGroup(d *schema.ResourceData, userGroup slack.UserGroup) 
 }
 
 func resourceSlackUserGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	handle := d.Get("handle").(string)
 	var name = handle
@@ -89,7 +90,7 @@ func resourceSlackUserGroupCreate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceSlackUserGroupRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 	id := d.Id()
@@ -126,7 +127,7 @@ func resourceSlackUserGroupRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceSlackUserGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	handle := d.Get("handle").(string)
 	var name = handle
@@ -158,7 +159,7 @@ func resourceSlackUserGroupUpdate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceSlackUserGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 	id := d.Id()

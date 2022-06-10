@@ -2,8 +2,10 @@ package slack
 
 import (
 	"context"
-	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/slack-go/slack"
 )
 
 func dataSourceConversation() *schema.Resource {
@@ -62,7 +64,7 @@ func dataSourceConversation() *schema.Resource {
 }
 
 func dataSlackConversationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	channelId := d.Get("channel_id").(string)
 
