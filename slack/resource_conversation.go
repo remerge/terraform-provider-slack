@@ -42,7 +42,7 @@ func resourceSlackConversation() *schema.Resource {
 			},
 			"topic": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"purpose": {
 				Type:     schema.TypeString,
@@ -137,13 +137,13 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	if d.HasChange("topic") {
-		if topic, ok := d.GetOk("topic"); ok {
-			if _, err := client.SetTopicOfConversationContext(ctx, d.Id(), topic.(string)); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
+	// if d.HasChange("topic") {
+	// 	if topic, ok := d.GetOk("topic"); ok {
+	// 		if _, err := client.SetTopicOfConversationContext(ctx, d.Id(), topic.(string)); err != nil {
+	// 			return diag.FromErr(err)
+	// 		}
+	// 	}
+	// }
 
 	if d.HasChange("purpose") {
 		if purpose, ok := d.GetOk("purpose"); ok {
