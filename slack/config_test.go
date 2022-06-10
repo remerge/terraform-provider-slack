@@ -1,6 +1,10 @@
 package slack
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/slack-go/slack"
+)
 
 func Test_Client(t *testing.T) {
 	config := &Config{
@@ -13,7 +17,7 @@ func Test_Client(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if client.(*Team).client == nil {
+	if client.(*slack.Client) == nil {
 		t.Fatalf("required non-nil client")
 	}
 }

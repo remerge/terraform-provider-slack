@@ -3,10 +3,11 @@ package slack
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/slack-go/slack"
 	"log"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/slack-go/slack"
 )
 
 func resourceSlackUserGroupMembers() *schema.Resource {
@@ -45,7 +46,7 @@ func configureSlackUserGroupMembers(d *schema.ResourceData, userGroup slack.User
 }
 
 func resourceSlackUserGroupMembersCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
@@ -72,7 +73,7 @@ func resourceSlackUserGroupMembersCreate(d *schema.ResourceData, meta interface{
 }
 
 func resourceSlackUserGroupMembersRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
@@ -96,7 +97,7 @@ func resourceSlackUserGroupMembersRead(d *schema.ResourceData, meta interface{})
 }
 
 func resourceSlackUserGroupMembersUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 
@@ -133,7 +134,7 @@ func resourceSlackUserGroupMembersUpdate(d *schema.ResourceData, meta interface{
 }
 
 func resourceSlackUserGroupMembersDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 
 	ctx := context.WithValue(context.Background(), ctxId, d.Id())
 	usergroupId := d.Get("usergroup_id").(string)

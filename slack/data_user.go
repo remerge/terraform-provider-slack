@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
 )
 
@@ -74,7 +74,7 @@ func dataSourceSlackUserRead(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[INFO] Refreshing Slack User: %s", queryValue)
 
-	client := meta.(*Team).client
+	client := meta.(*slack.Client)
 	ctx := context.WithValue(context.Background(), ctxId, queryValue)
 
 	if queryType == userQueryTypeID {

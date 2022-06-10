@@ -2,11 +2,12 @@ package slack
 
 import (
 	"encoding/json"
-	"gopkg.in/djherbis/times.v1"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+
+	"gopkg.in/djherbis/times.v1"
 )
 
 const cacheDir = "./.terraform/plugins/.cache/terraform-provider-slack"
